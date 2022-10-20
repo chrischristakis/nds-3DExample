@@ -1,6 +1,8 @@
 #include <nds.h>
 #include <stdio.h>
 
+#include "texture_pcx.h"
+
 int main() {
 
 	//Gives us 1 3D background to work with
@@ -9,6 +11,8 @@ int main() {
 
 	//Initialize an opengl context for us to use
 	glInit();
+	glEnable(GL_TEXTURE_2D);
+
 	glClearColor(3, 3, 3, 31);
 	glViewport(0, 0, 255, 191);
 
@@ -21,6 +25,21 @@ int main() {
 	// Now we load the perspective matrix into the matrix slot in GL_PROJECTION
 	// (fov, aspect ratio, znear, zfar)
 	gluPerspective(70, 256.0 / 192.0, 0.1, 40);
+
+	int textureID;
+	vramSetBankA(VRAM_A_TEXTURE);
+
+	sImage pcx;
+
+	loadPCX((u8*)texture_pcx, &pcx);
+
+	image8to16(&pcx);
+
+	glGenTextures(1, &textureID);
+	glBindTexture(0, textureID);
+	glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_128, TEXTURE_SIZE_128, 0, TEXGEN_TEXCOORD, (u8*)pcx.image.data8);
+
+	imageDestroy(&pcx);
 
 	//Stores data for our triangle
 	struct Transform {
@@ -65,17 +84,25 @@ int main() {
 		glRotateY(triangle.rotY);
 		glRotateX(triangle.rotX);
 
-		//Triangle rendering
-		glBegin(GL_TRIANGLE);
-			glColor3b(255, 0, 0);
+		glBindTexture(0, textureID);
+
+		glBegin(GL_QUAD);
+			glNormal3f(0, 0, 1.0f);
+
+			glTexCoord2f(0.0f, 1.0f);
 			glVertex3f(-0.5f, -0.5f, 0);
-
-			glColor3b(0, 255, 0);
+	
+			glTexCoord2f(1.0f, 1.0f);
 			glVertex3f(0.5f, -0.5f, 0);
+	
+			glTexCoord2f(1.0f, 0.0f);
+			glVertex3f(0.5f, 0.5f, 0);
 
-			glColor3b(0, 0, 255);
-			glVertex3f(0.0f, 0.5f, 0);
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex3f(-0.5f, 0.5f, 0);
+		
 		glEnd();
+		
 
 		glFlush(0);  // Waits for a VBlank to swap the buffers and display the graphics.
 		swiWaitForVBlank();
