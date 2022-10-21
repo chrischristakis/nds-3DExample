@@ -12,6 +12,7 @@ int main() {
 	//Initialize an opengl context for us to use
 	glInit();
 	glEnable(GL_TEXTURE_2D);
+	glEnable(GL_BLEND);
 
 	glClearColor(3, 3, 3, 31);
 	glViewport(0, 0, 255, 191);
@@ -37,7 +38,7 @@ int main() {
 
 	glGenTextures(1, &textureID);
 	glBindTexture(0, textureID);
-	glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_128, TEXTURE_SIZE_128, 0, TEXGEN_TEXCOORD, (u8*)pcx.image.data8);
+	glTexImage2D(0, 0, GL_RGB, TEXTURE_SIZE_128, TEXTURE_SIZE_128, 0, TEXGEN_TEXCOORD, pcx.image.data8);
 
 	imageDestroy(&pcx);
 
@@ -74,7 +75,7 @@ int main() {
 		// ----------- //
 
 		//Specific to the DS, specify our alpha value and whether to cull polygons
-		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE);
+		glPolyFmt(POLY_ALPHA(31) | POLY_CULL_NONE | POLY_FORMAT_LIGHT0);
 
 		glMatrixMode(GL_MODELVIEW);
 		glLoadIdentity();
@@ -99,8 +100,25 @@ int main() {
 			glVertex3f(0.5f, 0.5f, 0);
 
 			glTexCoord2f(0.0f, 0.0f);
-			glVertex3f(-0.5f, 0.5f, 0);
-		
+			glVertex3f(-0.5f, 0.5f, 0);	
+		glEnd();
+
+		glPolyFmt(POLY_ALPHA(15) | POLY_CULL_NONE | POLY_FORMAT_LIGHT0);
+
+		glBegin(GL_QUAD);
+			glNormal3f(0, 0, 1.0f);
+
+			glTexCoord2f(0.0f, 1.0f);
+			glVertex3f(-0.5f + 1.0f, -0.5f, 0);
+
+			glTexCoord2f(1.0f, 1.0f);
+			glVertex3f(0.5f + 1.0f, -0.5f, 0);
+
+			glTexCoord2f(1.0f, 0.0f);
+			glVertex3f(0.5f + 1.0f, 0.5f, 0);
+
+			glTexCoord2f(0.0f, 0.0f);
+			glVertex3f(-0.5f + 1.0f, 0.5f, 0);
 		glEnd();
 		
 
